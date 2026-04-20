@@ -7,6 +7,7 @@ import {
 
 import { cn } from "@/lib/utils"
 import { buttonVariants, type Button } from "@/components/ui/button"
+import { Link, type LinkProps } from "react-router-dom"
 
 function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
   return (
@@ -39,28 +40,45 @@ function PaginationItem({ ...props }: React.ComponentProps<"li">) {
 
 type PaginationLinkProps = {
   isActive?: boolean
+  to?: LinkProps["to"]
 } & Pick<React.ComponentProps<typeof Button>, "size"> &
-  React.ComponentProps<"a">
+  (React.ComponentProps<"a"> | Omit<React.ComponentProps<typeof Link>, "className" | "children">)
 
 function PaginationLink({
   className,
   isActive,
   size = "icon",
+  to,
   ...props
 }: PaginationLinkProps) {
+  const commonClassName = cn(
+    buttonVariants({
+      variant: isActive ? "outline" : "ghost",
+      size,
+    }),
+    className
+  )
+
+  if (to) {
+    return (
+      <Link
+        aria-current={isActive ? "page" : undefined}
+        data-slot="pagination-link"
+        data-active={isActive}
+        className={commonClassName}
+        to={to}
+        {...(props as React.ComponentProps<typeof Link>)}
+      />
+    )
+  }
+
   return (
     <a
       aria-current={isActive ? "page" : undefined}
       data-slot="pagination-link"
       data-active={isActive}
-      className={cn(
-        buttonVariants({
-          variant: isActive ? "outline" : "ghost",
-          size,
-        }),
-        className
-      )}
-      {...props}
+      className={commonClassName}
+      {...(props as React.ComponentProps<"a">)}
     />
   )
 }

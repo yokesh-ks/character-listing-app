@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useEffect, useState, useRef } from 'react'
 import { Character } from '@/components/cards/Character'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -26,6 +26,7 @@ import type { CharacterStatus, CharactersResponse, Character as CharacterType } 
 import { useSearchParams } from 'react-router-dom'
 
 import { useQuery } from '@tanstack/react-query'
+import { useDebounce } from '@/hooks/use-debounce'
 
 export default function CharactersPage() {
     const [searchParams, setSearchParams] = useSearchParams()
@@ -33,6 +34,34 @@ export default function CharactersPage() {
     const page = Number(searchParams.get('page') || 1)
     const status = (searchParams.get('status') as CharacterStatus | null) || 'all'
     const name = searchParams.get('name') || ''
+
+    const [searchName, setSearchName] = useState(name)
+    const debouncedSearchName = useDebounce(searchName, 500)
+    const isFirstMount = useRef(true)
+    const isUserTyping = useRef(false)
+
+    useEffect(() => {
+        setSearchName(name)
+        isUserTyping.current = false
+    }, [name])
+
+    useEffect(() => {
+        if (isFirstMount.current) {
+            isFirstMount.current = false
+            return
+        }
+        if (!isUserTyping.current) return
+        setSearchParams(prev => {
+            const params = new URLSearchParams(prev)
+            if (debouncedSearchName) {
+                params.set('name', debouncedSearchName)
+            } else {
+                params.delete('name')
+            }
+            params.set('page', '1')
+            return params
+        })
+    }, [debouncedSearchName, setSearchParams])
 
     const { data, isLoading, isError, error, refetch } = useQuery<CharactersResponse, Error>({
         queryKey: ['characters', page, status, name],
@@ -61,8 +90,9 @@ export default function CharactersPage() {
     }, [updateFilter])
 
     const handleNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        updateFilter('name', e.target.value)
-    }, [updateFilter])
+        isUserTyping.current = true
+        setSearchName(e.target.value)
+    }, [])
 
     const handlePageChange = useCallback((newPage: number) => {
         const params = new URLSearchParams(searchParams)
@@ -95,7 +125,7 @@ export default function CharactersPage() {
                 <div className="flex-1">
                     <Input
                         placeholder="Search by name..."
-                        value={name}
+                        value={searchName}
                         onChange={handleNameChange}
                         className="max-w-sm"
                     />
@@ -181,7 +211,7 @@ export default function CharactersPage() {
                                 ) : (
                                     <PaginationLink
                                         key={item}
-                                        href={`?page=${item}&status=${status}&name=${name}`}
+                                        to={`?page=${item}${status ? `&status=${status}` : ''}${name ? `&name=${name}` : ''}`}
                                         isActive={page === item}
                                     >
                                         {item}
