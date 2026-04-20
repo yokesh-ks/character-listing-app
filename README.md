@@ -5,8 +5,8 @@ A React application for browsing characters from the Rick and Morty API. Built w
 ## Getting Started
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 ## Features

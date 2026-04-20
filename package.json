@@ -1,14 +1,15 @@
 {
-  "name": "react-shadcn-starter",
+  "name": "character-listing-app",
   "private": true,
-  "version": "1.0",
+  "version": "1.0.0",
+  "description": "A React application for browsing characters from the Rick and Morty API",
   "type": "module",
+  "packageManager": "pnpm@9.0.0",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "biome check",
-    "preview": "vite preview",
-    "build:gh": "tsc -b && cross-env VITE_BASE_URL=/react-shadcn-starter/ VITE_USE_HASH_ROUTE=true vite build"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.3",
