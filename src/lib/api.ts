@@ -22,6 +22,10 @@ export async function fetchCharacters(page: number = 1, status?: string, name?: 
         })
 
         if (!response.ok) {
+            if (response.status === 404) {
+                // Treat 404 as empty results (no matching characters)
+                return { info: { pages: 0, count: 0, next: null, prev: null }, results: [] }
+            }
             throw new Error(`HTTP error! status: ${response.status}`)
         }
 
